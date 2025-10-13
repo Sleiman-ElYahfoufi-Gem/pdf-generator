@@ -5,9 +5,13 @@ export const login = async (req, res) => {
     const { clientId, secretKey, email } = req.body;
     const result = await authenticateUser(clientId, secretKey, email);
     
-    // Store user in session
-    req.session.user = result.user;
-    req.session.token = result.token;
+    // Send JWT token to client in HTTP-only cookie
+    // Server does NOT store the token - it's stateless
+    res.cookie('token', result.token, {
+      httpOnly: true, // Can't be accessed by JavaScript (security)
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      sameSite: 'strict'
+    });
     
     // Redirect to PDF form after successful login
     res.redirect('/api/pdf/pdf-form');
@@ -17,14 +21,11 @@ export const login = async (req, res) => {
 };
 
 export const showLoginForm = (req, res) => {
-  res.render("pages/login");
+  res.render("login");
 };
 
 export const logout = (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      return res.status(500).json({ message: 'Error logging out' });
-    }
-    res.redirect('/api/auth/login');
-  });
+  // Clear the JWT cookie
+  res.clearCookie('token');
+  res.redirect('/api/auth/login');
 };
