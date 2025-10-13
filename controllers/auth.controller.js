@@ -15,6 +15,10 @@ export const login = async (req, res) => {
     
     // Redirect to PDF form after successful login
     res.redirect('/api/pdf/pdf-form');
+
+/* WHEN FRONTEND IN USE */
+   // res.json({ token: result.token }); // Send JSON, let frontend handle redirect
+
   } catch (error) {
     res.status(401).json({ message: error.message });
   }
