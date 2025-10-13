@@ -1,11 +1,12 @@
 import express from "express";
 import { generatePDF, showPDFForm } from "../controllers/pdf-generator.controller.js";
-import { validatePDFGeneration } from "../validations/pdf-generator-validation.js";
+import { validatePDFGeneration } from "../validations/pdf-generator.validation.js";
+import { authenticateToken } from "../middleware/auth.middleware.js";
 
 const PDFRouter = express.Router();
 
-PDFRouter.get("/pdf-form", showPDFForm);
-// here we used a pipe, where in the validatepdfgeneration i have next, so it goes to the generatepdf
-PDFRouter.post("/generate-pdf", validatePDFGeneration, generatePDF); 
+// Protected routes - require authentication
+PDFRouter.get("/pdf-form", authenticateToken, showPDFForm);
+PDFRouter.post("/generate-pdf", authenticateToken, validatePDFGeneration, generatePDF); 
 
 export default PDFRouter;

@@ -8,7 +8,7 @@ export const generatePDF = async (req, res) => {
     // render is for express-handlebars
     // uses pdf-template from the views to input data there with hbs
     // its configured in server.js
-    res.render("pdf-template", { username, email, country, description, layout: false }, async (err, html) => {
+    res.render("templates/pdf-template", { username, email, country, description, layout: false }, async (err, html) => {
 
       if (err) {
         console.error("Error rendering template:", err);
@@ -29,5 +29,5 @@ export const generatePDF = async (req, res) => {
 };
 
 export const showPDFForm = (req, res) => {
-  res.render("pdf-form");
+  res.render("pages/pdf-form");
 };
