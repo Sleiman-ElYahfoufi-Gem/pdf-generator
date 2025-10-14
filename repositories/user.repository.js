@@ -16,10 +16,10 @@ export const findById = async (userId) => {
   return result.rows[0] || null;
 };
 
-export const createUser = async (clientId, hashedSecretKey, email) => {
+export const createUser = async (clientId, secretKey, email) => {
   const result = await query(
     'INSERT INTO users (client_id, secret_key, email) VALUES ($1, $2, $3) RETURNING *',
-    [clientId, hashedSecretKey, email]
+    [clientId, secretKey, email]
   );
   return result.rows[0];
 };

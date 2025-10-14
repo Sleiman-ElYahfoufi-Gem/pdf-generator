@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import routes from "./routes/index.js";
 import { engine } from "express-handlebars";
 import "./database/db.js"; // Import to test connection
+import { VIEWS_FOLDER } from "./utils/constants.js";
 
 dotenv.config();
 
@@ -13,7 +14,7 @@ const PORT = process.env.PORT || 8080;
 // Configure Handlebars
 app.engine('hbs', engine({extname:'.hbs', defaultLayout: false}))
 app.set("view engine", "hbs")
-app.set("views","./views")
+app.set("views", VIEWS_FOLDER)
 
 // Middleware
 app.use(express.json());

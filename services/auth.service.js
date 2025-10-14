@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import * as userRepository from '../repositories/user.repository.js';
+import { TOKEN_EXPIRY } from '../utils/constants.js';
 
 export const authenticateUser = async (clientId, secretKey, email) => {
   // Get user from database via repository
@@ -20,7 +21,7 @@ export const authenticateUser = async (clientId, secretKey, email) => {
   const token = jwt.sign(
     { userId: user.id, clientId: user.client_id, email: user.email },
     process.env.JWT_SECRET,
-    { expiresIn: '24h' }
+    { expiresIn: TOKEN_EXPIRY }
   );
 
   return { 

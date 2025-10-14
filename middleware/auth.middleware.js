@@ -10,7 +10,7 @@ export const authenticateToken = async (req, res, next) => {
       return res.redirect('/api/auth/login');
     }
 
-    // Verify JWT token (server does NOT store it - just validates it)
+    // Verify JWT token 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
     // Get user from database using the userId from JWT
