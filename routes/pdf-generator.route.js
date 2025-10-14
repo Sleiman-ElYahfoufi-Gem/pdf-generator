@@ -5,7 +5,6 @@ import { authenticateToken } from "../middleware/auth.middleware.js";
 
 const PDFRouter = express.Router();
 
-// Protected routes - require authentication
 PDFRouter.get("/pdf-form", authenticateToken, showPDFForm);
 PDFRouter.post("/generate-pdf", authenticateToken, validatePDFGeneration, generatePDF); 
 
