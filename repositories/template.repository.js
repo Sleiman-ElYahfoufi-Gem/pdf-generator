@@ -13,6 +13,14 @@ export const getTemplatesForUser = async (userId) => {
   return result.rows;
 };
 
+// Get ALL templates (not filtered by user)
+export const getAllTemplates = async () => {
+  const result = await query(
+    'SELECT id, name, src, created_at FROM pdf_templates ORDER BY name ASC'
+  );
+  return result.rows;
+};
+
 // Get a specific template by ID
 export const getTemplateById = async (templateId) => {
   const result = await query(
