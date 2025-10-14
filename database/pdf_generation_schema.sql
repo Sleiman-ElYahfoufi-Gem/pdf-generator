@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict lHbYT7wCtIvCLRfTPXeAA1Gd78j2VBoY7nnU4XsgdBaeodbzXz8m27cgCHgKlms
+\restrict fRwIJRO0vXtnzdMOeHHJprcPLWhB8gFTSR7NsSQqnFNGTpKPs6FdTYqqXtTBR9M
 
 -- Dumped from database version 17.6
 -- Dumped by pg_dump version 17.6
@@ -22,6 +22,57 @@ SET row_security = off;
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
+
+--
+-- Name: logs; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.logs (
+    id integer NOT NULL,
+    request_id character varying(255) NOT NULL,
+    method character varying(10) NOT NULL,
+    url text NOT NULL,
+    request_body jsonb,
+    query_params jsonb,
+    url_params jsonb,
+    request_headers jsonb,
+    response_status_code integer,
+    response_body jsonb,
+    response_time_ms integer,
+    user_id integer,
+    ip_address character varying(50),
+    user_agent text,
+    error_message text,
+    error_stack text,
+    request_timestamp timestamp without time zone NOT NULL,
+    response_timestamp timestamp without time zone,
+    created_at timestamp without time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.logs OWNER TO postgres;
+
+--
+-- Name: logs_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.logs_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.logs_id_seq OWNER TO postgres;
+
+--
+-- Name: logs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.logs_id_seq OWNED BY public.logs.id;
+
 
 --
 -- Name: pdf_templates; Type: TABLE; Schema: public; Owner: postgres
@@ -133,6 +184,13 @@ ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 
 --
+-- Name: logs id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.logs ALTER COLUMN id SET DEFAULT nextval('public.logs_id_seq'::regclass);
+
+
+--
 -- Name: pdf_templates id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -151,6 +209,22 @@ ALTER TABLE ONLY public.user_template_access ALTER COLUMN id SET DEFAULT nextval
 --
 
 ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
+
+
+--
+-- Name: logs logs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.logs
+    ADD CONSTRAINT logs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: logs logs_request_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.logs
+    ADD CONSTRAINT logs_request_id_key UNIQUE (request_id);
 
 
 --
@@ -202,6 +276,62 @@ ALTER TABLE ONLY public.users
 
 
 --
+-- Name: idx_logs_method; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_logs_method ON public.logs USING btree (method);
+
+
+--
+-- Name: idx_logs_request_body_gin; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_logs_request_body_gin ON public.logs USING gin (request_body);
+
+
+--
+-- Name: idx_logs_request_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_logs_request_id ON public.logs USING btree (request_id);
+
+
+--
+-- Name: idx_logs_request_timestamp; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_logs_request_timestamp ON public.logs USING btree (request_timestamp DESC);
+
+
+--
+-- Name: idx_logs_response_body_gin; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_logs_response_body_gin ON public.logs USING gin (response_body);
+
+
+--
+-- Name: idx_logs_status_code; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_logs_status_code ON public.logs USING btree (response_status_code);
+
+
+--
+-- Name: idx_logs_url; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_logs_url ON public.logs USING btree (url);
+
+
+--
+-- Name: idx_logs_user_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_logs_user_id ON public.logs USING btree (user_id);
+
+
+--
 -- Name: idx_user_client_id; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -220,6 +350,14 @@ CREATE INDEX idx_user_template_access_template_id ON public.user_template_access
 --
 
 CREATE INDEX idx_user_template_access_user_id ON public.user_template_access USING btree (user_id);
+
+
+--
+-- Name: logs logs_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.logs
+    ADD CONSTRAINT logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE SET NULL;
 
 
 --
@@ -291,5 +429,5 @@ GRANT ALL ON SEQUENCE public.users_id_seq TO pdf_user;
 -- PostgreSQL database dump complete
 --
 
-\unrestrict lHbYT7wCtIvCLRfTPXeAA1Gd78j2VBoY7nnU4XsgdBaeodbzXz8m27cgCHgKlms
+\unrestrict fRwIJRO0vXtnzdMOeHHJprcPLWhB8gFTSR7NsSQqnFNGTpKPs6FdTYqqXtTBR9M
 
