@@ -38,6 +38,37 @@ const logger = winston.createLogger({
             info += ` | Time: ${responseTime}`;
           }
           
+          // Add other metadata in a prettier format
+          const cleanMeta = { ...meta };
+          delete cleanMeta.service; // Remove service name
+          
+          // Format common fields nicely
+          if (cleanMeta.port) {
+            info += ` | Port: ${cleanMeta.port}`;
+            delete cleanMeta.port;
+          }
+          if (cleanMeta.templateId) {
+            info += ` | Template: ${cleanMeta.templateId}`;
+            delete cleanMeta.templateId;
+          }
+          if (cleanMeta.size) {
+            info += ` | Size: ${cleanMeta.size} bytes`;
+            delete cleanMeta.size;
+          }
+          if (cleanMeta.count) {
+            info += ` | Count: ${cleanMeta.count}`;
+            delete cleanMeta.count;
+          }
+          if (cleanMeta.error) {
+            info += ` | Error: ${cleanMeta.error}`;
+            delete cleanMeta.error;
+          }
+          
+          // If there's still metadata left, show it as JSON
+          if (Object.keys(cleanMeta).length > 0) {
+            info += ` | ${JSON.stringify(cleanMeta)}`;
+          }
+          
           return `${timestamp} [${level}] ${requestIdStr}: ${message}${info}`;
         })
       )
