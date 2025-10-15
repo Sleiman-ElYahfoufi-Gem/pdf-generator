@@ -39,7 +39,7 @@ export const authenticateToken = async (req, res, next) => {
     // Attach user info to request object
     req.user = {
       id: user.id,
-      clientId: user.client_id,
+      clientId: user.clientId,
       email: user.email
     };
 
