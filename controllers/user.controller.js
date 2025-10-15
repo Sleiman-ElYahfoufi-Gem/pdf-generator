@@ -6,7 +6,7 @@ export const getUsers = async (req, res) => {
     res.json({ success: true, data: users });
   } catch (error) {
     
-    logger.error('Error fetching users:', { error: err });
+    logger.error('Error fetching users:', { error: error });
 
     res.status(500).json({ success: false, message: error.message });
   }

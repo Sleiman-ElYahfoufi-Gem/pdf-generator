@@ -1,13 +1,141 @@
-<form action="/api/pdf/generate-pdf" method="POST">
-  <input type="text" name="username" placeholder="Enter username">
-  <input type="email" name="email" placeholder="Enter email">
-    <input type="text" name="country" placeholder="Enter country">
-  <input type="text" name="description" placeholder="Enter description">
-<select name="templateId" id="templateId" required>
-          <option value="">-- Choose a template --</option>
-          {{#each templates}}
-            <option value="{{this.id}}">{{this.name}}</option>
-          {{/each}}
-        </select>
-  <button type="submit">Submit</button>
-</form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generate PDF</title>
+</head>
+<body>
+  <h2>Generate PDF</h2>
+  <button onclick="logout()">Logout</button>
+
+  <form id="pdfForm">
+    <select name="templateId" id="templateId" required>
+      <option value="">Loading templates...</option>
+    </select>
+
+    <input type="text" id="username" name="username" placeholder="Enter username" required>
+    <input type="email" id="email" name="email" placeholder="Enter email" required>
+    <input type="text" id="country" name="country" placeholder="Enter country" required>
+    <input type="text" id="description" name="description" placeholder="Enter description" required>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <p id="message"></p>
+
+  <script>
+    // Check if logged in
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = '/api/auth/login';
+    }
+
+    // Fetch templates from API
+    async function loadTemplates() {
+      const templateSelect = document.getElementById('templateId');
+      
+      try {
+        const response = await fetch('/api/templates/user', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Clear loading option
+          templateSelect.innerHTML = '<option value="">-- Choose a template --</option>';
+          
+          // Populate dropdown
+          if (data.success && data.data.length > 0) {
+            data.data.forEach(template => {
+              const option = document.createElement('option');
+              option.value = template.id;
+              option.textContent = template.name;
+              templateSelect.appendChild(option);
+            });
+          } else {
+            templateSelect.innerHTML = '<option value="">No templates available</option>';
+            document.getElementById('message').textContent = 'You have no templates assigned.';
+          }
+        } else {
+          if (response.status === 401) {
+            localStorage.removeItem('token');
+            window.location.href = '/api/auth/login';
+            return;
+          }
+          templateSelect.innerHTML = '<option value="">Error loading templates</option>';
+          document.getElementById('message').textContent = 'Failed to load templates.';
+        }
+      } catch (error) {
+        console.error('Error loading templates:', error);
+        templateSelect.innerHTML = '<option value="">Error loading templates</option>';
+        document.getElementById('message').textContent = 'Error: ' + error.message;
+      }
+    }
+
+    // Load templates on page load
+    loadTemplates();
+
+    // Logout
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = '/api/auth/login';
+    }
+
+    // Handle form
+    document.getElementById('pdfForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const message = document.getElementById('message');
+      message.textContent = 'Generating PDF...';
+
+      const formData = {
+        templateId: document.getElementById('templateId').value,
+        username: document.getElementById('username').value,
+        email: document.getElementById('email').value,
+        country: document.getElementById('country').value,
+        description: document.getElementById('description').value
+      };
+
+      try {
+        const response = await fetch('/api/pdf/generate-pdf', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(formData)
+        });
+
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          
+          // Open PDF in new tab
+          window.open(url, '_blank');
+          
+          // Clean up after a delay (give browser time to open it)
+          setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+
+          message.textContent = 'PDF generated successfully! Opening in new tab...';
+          document.getElementById('pdfForm').reset();
+          document.getElementById('templateId').selectedIndex = 0;
+        } else {
+          if (response.status === 401) {
+            localStorage.removeItem('token');
+            window.location.href = '/api/auth/login';
+            return;
+          }
+          const data = await response.json();
+          message.textContent = data.message || 'Failed to generate PDF';
+        }
+      } catch (error) {
+        message.textContent = 'Error: ' + error.message;
+      }
+    });
+  </script>
+</body>
+</html>

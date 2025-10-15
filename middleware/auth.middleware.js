@@ -1,23 +1,39 @@
 import jwt from 'jsonwebtoken';
 import * as userRepository from '../repositories/user.repository.js';
+import logger from '../utils/logger.js';
 
 export const authenticateToken = async (req, res, next) => {
   try {
-    // Get JWT token from cookie (sent by client browser automatically)
-    const token = req.cookies.token;
+    // Get token from Authorization header
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Format: "Bearer TOKEN"
 
     if (!token) {
-      return res.redirect('/api/auth/login');
+      logger.warn('Authentication failed: No token provided', {
+        url: req.url,
+        method: req.method
+      });
+      return res.status(401).json({ 
+        success: false,
+        message: 'Access token is required' 
+      });
     }
 
-    // Verify JWT token 
+    // Verify JWT token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
-    // Get user from database using the userId from JWT
+    // Get user from database
     const user = await userRepository.findById(decoded.userId);
     
     if (!user) {
-      return res.redirect('/api/auth/login');
+      logger.warn('Authentication failed: Invalid user', {
+        userId: decoded.userId,
+        url: req.url
+      });
+      return res.status(401).json({ 
+        success: false,
+        message: 'Invalid token' 
+      });
     }
 
     // Attach user info to request object
@@ -27,14 +43,41 @@ export const authenticateToken = async (req, res, next) => {
       email: user.email
     };
 
+    logger.debug('User authenticated', {
+      userId: user.id,
+      url: req.url
+    });
+
     next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
-      return res.redirect('/api/auth/login');
+      logger.warn('Authentication failed: Token expired', {
+        url: req.url
+      });
+      return res.status(401).json({ 
+        success: false,
+        message: 'Token has expired' 
+      });
     }
     if (error.name === 'JsonWebTokenError') {
-      return res.redirect('/api/auth/login');
+      logger.warn('Authentication failed: Invalid token', {
+        url: req.url,
+        error: error.message
+      });
+      return res.status(401).json({ 
+        success: false,
+        message: 'Invalid token' 
+      });
     }
-    return res.status(500).json({ message: 'Internal server error' });
+    
+    logger.error('Authentication error', {
+      error: error.message,
+      stack: error.stack,
+      url: req.url
+    });
+    return res.status(500).json({ 
+      success: false,
+      message: 'Internal server error' 
+    });
   }
 };

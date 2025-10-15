@@ -1,11 +1,11 @@
 import express from "express";
 import dotenv from "dotenv";
-import cookieParser from "cookie-parser";
+// import cookieParser from "cookie-parser"; // ← Can remove if not using cookies elsewhere
 import routes from "./routes/index.js";
 import { engine } from "express-handlebars";
 import { loggerMiddleware } from "./middleware/logger.middleware.js";
 import logger from "./utils/logger.js";
-import "./database/db.js";
+import "./database/db.js"; // Import to test connection
 
 dotenv.config();
 
@@ -20,9 +20,9 @@ app.set("views","./views")
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser()); // Parse cookies (JWT stored in cookie)
+// app.use(cookieParser()); // ← Not needed for header-based auth (can remove)
 
-// Centralized Logger - Catches ALL requests
+// ⭐ CENTRALIZED LOGGER - Catches ALL requests (must be before routes)
 app.use(loggerMiddleware);
 
 // Routes
@@ -30,7 +30,6 @@ app.use("/api", routes)
 
 // Start server
 app.listen(PORT, () => {
-  logger.info('Server started');
-  logger.info(`Server is running on port: ${PORT}`);
-
+  logger.info('Server started', { port: PORT });
+  console.log(`Server is running on port: ${PORT}`);
 });
