@@ -1,6 +1,55 @@
-<form action="/api/auth/login" method="POST">
-  <input type="text" name="clientId" placeholder="Client ID" required>
-  <input type="password" name="secretKey" placeholder="Secret Key" required>
-  <input type="email" name="email" placeholder="Email" required>
-  <button type="submit">Login</button>
-</form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+</head>
+<body>
+  <h2>Login</h2>
+  
+  <form id="loginForm">
+    <input type="text" id="clientId" name="clientId" placeholder="Client ID" required>
+    <input type="password" id="secretKey" name="secretKey" placeholder="Secret Key" required>
+    <input type="email" id="email" name="email" placeholder="Email" required>
+    <button type="submit">Login</button>
+  </form>
+
+  <p id="message"></p>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const clientId = document.getElementById('clientId').value;
+      const secretKey = document.getElementById('secretKey').value;
+      const email = document.getElementById('email').value;
+      const message = document.getElementById('message');
+
+      message.textContent = 'Logging in...';
+
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ clientId, secretKey, email })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          localStorage.setItem('token', data.token);
+          message.textContent = 'Login successful! Redirecting...';
+          setTimeout(() => {
+            window.location.href = '/api/pdf/pdf-form';
+          }, 1000);
+        } else {
+          message.textContent = data.message || 'Login failed';
+        }
+      } catch (error) {
+        message.textContent = 'Error: ' + error.message;
+      }
+    });
+  </script>
+</body>
+</html>
