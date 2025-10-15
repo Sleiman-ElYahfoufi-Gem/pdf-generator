@@ -1,5 +1,4 @@
-import { getAllTemplates } from '../services/template.service.js';
-import * as templateRepository from '../repositories/template.repository.js';
+import { getAllTemplates, getUserTemplates as getUserTemplatesFromService } from '../services/template.service.js';
 import logger from '../utils/logger.js';
 
 // Get all templates (admin)
@@ -26,39 +25,40 @@ export const getTemplates = async (req, res) => {
 export const getUserTemplates = async (req, res) => {
   try {
     const userId = req.user.id; // From auth middleware
-    
+
     logger.debug('Fetching templates for user', { userId });
-    
-    // Get templates user has access to
-    const templates = await templateRepository.getTemplatesForUser(userId);
-    
-    if (!templates || templates.length === 0) {
-      logger.warn('No templates found for user', { userId });
-      return res.json({ 
-        success: true, 
-        data: [],
-        message: 'No templates available for this user'
-      });
-    }
-    
-    logger.info('Templates fetched successfully', { 
-      userId, 
-      count: templates.length 
+
+    // Get templates user has access to via service
+    const templates = await getUserTemplatesFromService(userId);
+
+    logger.info('Templates fetched successfully', {
+      userId,
+      count: templates.length
     });
-    
-    res.json({ 
-      success: true, 
-      data: templates 
+
+    res.json({
+      success: true,
+      data: templates
     });
   } catch (error) {
-    logger.error('Error fetching user templates', { 
+    logger.error('Error fetching user templates', {
       error: error.message,
       stack: error.stack,
       userId: req.user?.id
     });
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to fetch templates' 
+
+    // Handle "No templates available" case differently
+    if (error.message === "No templates available for this user") {
+      return res.json({
+        success: true,
+        data: [],
+        message: 'No templates available for this user'
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch templates'
     });
   }
 };

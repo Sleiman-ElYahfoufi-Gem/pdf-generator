@@ -5,7 +5,9 @@ import routes from "./routes/index.js";
 import { engine } from "express-handlebars";
 import { loggerMiddleware } from "./middleware/logger.middleware.js";
 import logger from "./utils/logger.js";
-import "./database/db.js"; // Import to test connection
+import "./database/db.js"; // Import to test existing PostgreSQL connection
+import { initializeSequelize } from "./database/config.js"; // Import Sequelize
+import { initializeModels } from "./models/index.js"; // Import models
 
 dotenv.config();
 
@@ -29,7 +31,13 @@ app.use(loggerMiddleware);
 app.use("/api", routes)
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   logger.info('Server started', { port: PORT });
   console.log(`Server is running on port: ${PORT}`);
+
+  // Initialize Sequelize connection
+  await initializeSequelize();
+
+  // Initialize models and relationships
+  await initializeModels();
 });

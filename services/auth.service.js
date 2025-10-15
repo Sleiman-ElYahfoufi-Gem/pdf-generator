@@ -11,25 +11,25 @@ export const authenticateUser = async (clientId, secretKey, email) => {
   }
 
   // Direct comparison of secret key
-  const isValid = secretKey === user.secret_key;
-  
+  const isValid = secretKey === user.secretKey;
+
   if (!isValid) {
     throw new Error('Invalid credentials');
   }
 
   // Generate JWT token
   const token = jwt.sign(
-    { userId: user.id, clientId: user.client_id, email: user.email },
+    { userId: user.id, clientId: user.clientId, email: user.email },
     process.env.JWT_SECRET,
     { expiresIn: TOKEN_EXPIRY }
   );
 
-  return { 
-    token, 
-    user: { 
-      id: user.id, 
-      clientId: user.client_id, 
-      email: user.email 
-    } 
+  return {
+    token,
+    user: {
+      id: user.id,
+      clientId: user.clientId,
+      email: user.email
+    }
   };
 };

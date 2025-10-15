@@ -1,5 +1,6 @@
 import puppeteer from "puppeteer";
 import * as templateRepository from "../repositories/template.repository.js";
+import { TEMPLATES_FOLDER } from "../utils/constants.js";
 
 export const createPDF = async (html) => {
   // Start puppeteer
@@ -38,19 +39,9 @@ export const generatePDFForUser = async (userId, templateId, data) => {
   
   // Return template path for rendering
   return {
-    templatePath: `templates/${template.src}`,
+    templatePath: `${TEMPLATES_FOLDER}/${template.src}`,
     templateName: template.name,
     data
   };
 };
 
-export const getUserTemplates = async (userId) => {
-  // Get all templates the user has access to
-  const templates = await templateRepository.getTemplatesForUser(userId);
-  
-  if (!templates || templates.length === 0) {
-    throw new Error("No templates available for this user");
-  }
-  
-  return templates;
-};

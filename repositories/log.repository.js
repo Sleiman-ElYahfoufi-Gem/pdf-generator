@@ -1,4 +1,4 @@
-import { query } from '../database/db.js';
+import { Log } from '../models/index.js';
 
 // Insert request log
 export const insertRequestLog = async (logData) => {
@@ -16,37 +16,21 @@ export const insertRequestLog = async (logData) => {
     requestTimestamp
   } = logData;
 
-  const result = await query(
-    `INSERT INTO logs (
-      request_id,
-      method,
-      url,
-      request_body,
-      query_params,
-      url_params,
-      request_headers,
-      user_id,
-      ip_address,
-      user_agent,
-      request_timestamp
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-    RETURNING id`,
-    [
-      requestId,
-      method,
-      url,
-      requestBody,
-      queryParams,
-      urlParams,
-      requestHeaders,
-      userId,
-      ipAddress,
-      userAgent,
-      requestTimestamp
-    ]
-  );
+  const log = await Log.create({
+    requestId,
+    method,
+    url,
+    requestBody,
+    queryParams,
+    urlParams,
+    requestHeaders,
+    userId,
+    ipAddress,
+    userAgent,
+    requestTimestamp
+  });
 
-  return result.rows[0];
+  return log;
 };
 
 // Update log with response data
@@ -61,54 +45,47 @@ export const updateResponseLog = async (logData) => {
     errorStack
   } = logData;
 
-  const result = await query(
-    `UPDATE logs 
-    SET 
-      response_status_code = $1,
-      response_body = $2,
-      response_time_ms = $3,
-      response_timestamp = $4,
-      error_message = $5,
-      error_stack = $6
-    WHERE request_id = $7
-    RETURNING id`,
-    [
+  await Log.update(
+    {
       responseStatusCode,
       responseBody,
       responseTimeMs,
       responseTimestamp,
       errorMessage,
-      errorStack,
-      requestId
-    ]
+      errorStack
+    },
+    {
+      where: { requestId },
+      returning: true
+    }
   );
 
-  return result.rows[0];
+  // Find and return the updated log
+  const updatedLog = await Log.findOne({ where: { requestId } });
+  return updatedLog;
 };
 
 // Get logs by request ID
 export const getLogByRequestId = async (requestId) => {
-  const result = await query(
-    'SELECT * FROM logs WHERE request_id = $1',
-    [requestId]
-  );
-  return result.rows[0] || null;
+  const log = await Log.findOne({ where: { requestId } });
+  return log;
 };
 
 // Get recent logs
 export const getRecentLogs = async (limit = 100) => {
-  const result = await query(
-    'SELECT * FROM logs ORDER BY request_timestamp DESC LIMIT $1',
-    [limit]
-  );
-  return result.rows;
+  const logs = await Log.findAll({
+    order: [['requestTimestamp', 'DESC']],
+    limit
+  });
+  return logs;
 };
 
 // Get logs by user
 export const getLogsByUserId = async (userId, limit = 50) => {
-  const result = await query(
-    'SELECT * FROM logs WHERE user_id = $1 ORDER BY request_timestamp DESC LIMIT $2',
-    [userId, limit]
-  );
-  return result.rows;
+  const logs = await Log.findAll({
+    where: { userId },
+    order: [['requestTimestamp', 'DESC']],
+    limit
+  });
+  return logs;
 };
