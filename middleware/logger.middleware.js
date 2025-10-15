@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import * as loggerService from '../services/logger.service.js';
-
+import logger from '../utils/logger.js';
 // Generate unique request ID
 const generateRequestId = () => {
   return `req_${Date.now()}_${uuidv4().split('-')[0]}`;
@@ -11,8 +11,11 @@ export const loggerMiddleware = (req, res, next) => {
   // Generate unique request ID
   const requestId = generateRequestId();
   const startTime = Date.now();
-  console.log('MIDDLEWARE HIT:', req.method, req.url);
-  console.log('Request ID:', requestId);
+logger.info('Request received', {
+  requestId: req.requestId,
+  method: req.method,
+  url: req.url  
+});
 
   // Attach request ID to request object (useful for debugging)
   req.requestId = requestId;

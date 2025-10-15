@@ -122,12 +122,7 @@ export const logResponse = (logData) => {
 
     // 2. Log to database (async, fire and forget)
     logRepository.updateResponseLog(sanitizedData).catch(err => {
-      // Direct console output to see full error
-      console.error('DATABASE UPDATE ERROR:');
-      console.error('Error Message:', err.message);
-      console.error('Error Code:', err.code);
-      console.error('SQL Query:', err.query);
-      console.error('Full Error:', err);
+  
       
       logger.error('Failed to update response log in database', { 
         error: err.message,
