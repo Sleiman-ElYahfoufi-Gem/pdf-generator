@@ -1,13 +1,11 @@
 import express from "express";
 import dotenv from "dotenv";
-// import cookieParser from "cookie-parser"; // ← Can remove if not using cookies elsewhere
 import routes from "./routes/index.js";
 import { engine } from "express-handlebars";
 import { loggerMiddleware } from "./middleware/logger.middleware.js";
 import logger from "./utils/logger.js";
-import "./database/db.js"; // Import to test existing PostgreSQL connection
-import { initializeSequelize } from "./database/config.js"; // Import Sequelize
-import { initializeModels } from "./models/index.js"; // Import models
+import { initializeSequelize } from "./database/config.js"; 
+import { initializeModels } from "./models/index.js"; 
 
 dotenv.config();
 
@@ -22,9 +20,8 @@ app.set("views","./views")
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-// app.use(cookieParser()); // ← Not needed for header-based auth (can remove)
 
-// ⭐ CENTRALIZED LOGGER - Catches ALL requests (must be before routes)
+// CENTRALIZED LOGGER - Catches ALL requests
 app.use(loggerMiddleware);
 
 // Routes
@@ -33,7 +30,7 @@ app.use("/api", routes)
 // Start server
 app.listen(PORT, async () => {
   logger.info('Server started', { port: PORT });
-  console.log(`Server is running on port: ${PORT}`);
+  logger.info(`Server is running on port: ${PORT}`);
 
   // Initialize Sequelize connection
   await initializeSequelize();

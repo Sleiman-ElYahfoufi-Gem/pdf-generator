@@ -3,7 +3,7 @@ import { User } from './user.js';
 import { Template } from './template.js';
 import { UserTemplateAccess } from './userTemplateAccess.js';
 import { Log } from './log.js';
-
+import logger from '../utils/logger.js';
 // Set up model relationships
 
 // User and Template many-to-many relationship through UserTemplateAccess
@@ -46,14 +46,12 @@ export const initializeModels = async () => {
   try {
     // Test the database connection
     await sequelize.authenticate();
-    console.log('Database connection established successfully');
+    logger.info('Database connection established successfully');
 
-    // Sync models (optional - use with caution in production)
-    // await sequelize.sync({ alter: false });
 
     return true;
   } catch (error) {
-    console.error('Unable to connect to the database:', error);
+    logger.error('Unable to connect to the database:', {error:error});
     return false;
   }
 };
