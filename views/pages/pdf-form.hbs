@@ -3,6 +3,11 @@
   <input type="email" name="email" placeholder="Enter email">
     <input type="text" name="country" placeholder="Enter country">
   <input type="text" name="description" placeholder="Enter description">
-
+<select name="templateId" id="templateId" required>
+          <option value="">-- Choose a template --</option>
+          {{#each templates}}
+            <option value="{{this.id}}">{{this.name}}</option>
+          {{/each}}
+        </select>
   <button type="submit">Submit</button>
 </form>

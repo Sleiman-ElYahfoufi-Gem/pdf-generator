@@ -1,6 +1,7 @@
 import { z } from "zod";
-//normal zod validation
+
 export const pdfGenerationSchema = z.object({
+  templateId: z.string().min(1, "Template is required").transform(Number),
   username: z.string().min(3, "Username must be at least 3 characters").max(50),
   email: z.string().email("Invalid email format"),
   country: z.string().min(2, "Country must be at least 2 characters").max(50),
@@ -19,6 +20,8 @@ export const validatePDFGeneration = (req, res, next) => {
       }))
     });
   }
+  
+  req.body = result.data;
   
   next();
 };
