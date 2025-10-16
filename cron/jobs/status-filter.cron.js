@@ -1,7 +1,6 @@
 import { getPoliciesByStatus, groupPoliciesByProduct, updatePolicyPremium } from '../../services/policy.service.js';
 import { callPremiumAPI } from '../../services/premium.service.js';
 import { POLICY_STATUS } from '../config/cron.config.js';
-import { CRON_SETTINGS } from '../config/cron.config.js';
 import logger from '../../utils/logger.js';
 
 /**

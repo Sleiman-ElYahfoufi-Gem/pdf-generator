@@ -24,13 +24,6 @@ export const CRON_SETTINGS = {
 
   // T+90 days offset
   DAYS_OFFSET: 90,
-
-  // API settings
-  PREMIUM_API_TIMEOUT: 10000, // 10 seconds
-  MAX_RETRIES: 3,
-
-  // Logging
-  ENABLE_CRON_LOGGING: process.env.ENABLE_CRON_LOGGING !== 'false'
 };
 
 // Policy status settings
