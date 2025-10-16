@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict fRwIJRO0vXtnzdMOeHHJprcPLWhB8gFTSR7NsSQqnFNGTpKPs6FdTYqqXtTBR9M
+\restrict qeynPekjvfZTOf8US0eHSYGtUif6fXVHPb4uQ6QuMMWqowdetwIxd143eh7BtLN
 
 -- Dumped from database version 17.6
 -- Dumped by pg_dump version 17.6
@@ -111,6 +111,87 @@ ALTER SEQUENCE public.pdf_templates_id_seq OWNED BY public.pdf_templates.id;
 
 
 --
+-- Name: policies; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.policies (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    product_id integer NOT NULL,
+    policy_number character varying(100),
+    status character varying(50) NOT NULL,
+    policy_lapsed date NOT NULL,
+    premium numeric(10,2),
+    premium_calculated_at timestamp without time zone,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT policies_status_check CHECK (((status)::text = ANY ((ARRAY['Lapsed'::character varying, 'Underwriter Modification'::character varying, 'Rating Declined'::character varying, 'Rating Success'::character varying, 'Rating Pending'::character varying, 'Review'::character varying])::text[])))
+);
+
+
+ALTER TABLE public.policies OWNER TO postgres;
+
+--
+-- Name: policies_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.policies_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.policies_id_seq OWNER TO postgres;
+
+--
+-- Name: policies_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.policies_id_seq OWNED BY public.policies.id;
+
+
+--
+-- Name: products; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.products (
+    id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    description text,
+    is_active boolean DEFAULT true,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.products OWNER TO postgres;
+
+--
+-- Name: products_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.products_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.products_id_seq OWNER TO postgres;
+
+--
+-- Name: products_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.products_id_seq OWNED BY public.products.id;
+
+
+--
 -- Name: user_template_access; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -198,6 +279,20 @@ ALTER TABLE ONLY public.pdf_templates ALTER COLUMN id SET DEFAULT nextval('publi
 
 
 --
+-- Name: policies id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.policies ALTER COLUMN id SET DEFAULT nextval('public.policies_id_seq'::regclass);
+
+
+--
+-- Name: products id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.products ALTER COLUMN id SET DEFAULT nextval('public.products_id_seq'::regclass);
+
+
+--
 -- Name: user_template_access id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -233,6 +328,38 @@ ALTER TABLE ONLY public.logs
 
 ALTER TABLE ONLY public.pdf_templates
     ADD CONSTRAINT pdf_templates_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: policies policies_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.policies
+    ADD CONSTRAINT policies_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: policies policies_policy_number_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.policies
+    ADD CONSTRAINT policies_policy_number_key UNIQUE (policy_number);
+
+
+--
+-- Name: products products_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.products
+    ADD CONSTRAINT products_name_key UNIQUE (name);
+
+
+--
+-- Name: products products_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.products
+    ADD CONSTRAINT products_pkey PRIMARY KEY (id);
 
 
 --
@@ -332,6 +459,48 @@ CREATE INDEX idx_logs_user_id ON public.logs USING btree (user_id);
 
 
 --
+-- Name: idx_policies_created_at; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_policies_created_at ON public.policies USING btree (created_at DESC);
+
+
+--
+-- Name: idx_policies_policy_lapsed; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_policies_policy_lapsed ON public.policies USING btree (policy_lapsed);
+
+
+--
+-- Name: idx_policies_product_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_policies_product_id ON public.policies USING btree (product_id);
+
+
+--
+-- Name: idx_policies_status; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_policies_status ON public.policies USING btree (status);
+
+
+--
+-- Name: idx_policies_status_policy_lapsed; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_policies_status_policy_lapsed ON public.policies USING btree (status, policy_lapsed);
+
+
+--
+-- Name: idx_policies_user_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_policies_user_id ON public.policies USING btree (user_id);
+
+
+--
 -- Name: idx_user_client_id; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -358,6 +527,22 @@ CREATE INDEX idx_user_template_access_user_id ON public.user_template_access USI
 
 ALTER TABLE ONLY public.logs
     ADD CONSTRAINT logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: policies policies_product_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.policies
+    ADD CONSTRAINT policies_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(id) ON DELETE CASCADE;
+
+
+--
+-- Name: policies policies_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.policies
+    ADD CONSTRAINT policies_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
@@ -429,5 +614,5 @@ GRANT ALL ON SEQUENCE public.users_id_seq TO pdf_user;
 -- PostgreSQL database dump complete
 --
 
-\unrestrict fRwIJRO0vXtnzdMOeHHJprcPLWhB8gFTSR7NsSQqnFNGTpKPs6FdTYqqXtTBR9M
+\unrestrict qeynPekjvfZTOf8US0eHSYGtUif6fXVHPb4uQ6QuMMWqowdetwIxd143eh7BtLN
 
